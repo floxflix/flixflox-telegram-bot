@@ -275,9 +275,10 @@ func (b *Bot) saveVideo(ctx context.Context, msg *tgbotapi.Message, sess session
 				sess.Background = cur.Background
 			}
 
-			b.publishCatalogItem(ctx, chatID, b.buildCatalogItem(sess, path))
+			uuid := b.publishCatalogItem(ctx, chatID, b.buildCatalogItem(sess, path))
 
 			if sess.Category == categoryTVShow {
+				sess.UUID = uuid
 				sess.Category = newEpisode
 				sess.Stage = stageAwaitingNextEpisodeFile
 				b.sessions.set(chatID, sess)

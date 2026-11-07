@@ -72,6 +72,11 @@ const (
 	// catalogTimeout caps the wait on the POST: the file is already on disk and
 	// nobody is watching this step.
 	catalogTimeout = 20 * time.Second
+
+	// catalogAnswerLimit caps how much of the answer is read. It is enough for
+	// the error the user is shown and for the handful of fields the saved item
+	// answers with; the rest is of no use here.
+	catalogAnswerLimit = 4 << 10
 )
 
 // catalogType translates the conversation's category into the value the API
@@ -143,24 +148,28 @@ func (b *Bot) buildEpisodeRequest(sess session, videoPath string) episodeRequest
 	}
 }
 
-// publishCatalogItem sends the item to the API once the file is on disk. The
-// file is already safe: if this fails it is reported and the bot carries on,
-// because the item can be redone without sending several GB again.
-func (b *Bot) publishCatalogItem(ctx context.Context, chatID int64, item CatalogItem) {
+// publishCatalogItem sends the item to the API once the file is on disk and
+// returns the uuid the API gave it, so a show can keep taking episodes without
+// being looked up again. The file is already safe: if this fails it is reported
+// and the bot carries on, because the item can be redone without sending
+// several GB again. The uuid is empty when nothing was published.
+func (b *Bot) publishCatalogItem(ctx context.Context, chatID int64, item CatalogItem) string {
 	if b.cfg.APIUrl == "" {
 		log.Print("FLIXFLOX_API_URL is empty: the catalog item is not published")
-		return
+		return ""
 	}
 
-	if err := b.postCatalogItem(ctx, item); err != nil {
+	uuid, err := b.postCatalogItem(ctx, item)
+	if err != nil {
 		log.Printf("error publishing the catalog item for %q: %v", item.Title, err)
 		b.send(chatID, "⚠️ The file was saved, but the catalog was not updated:\n"+err.Error())
-		return
+		return ""
 	}
-	b.send(chatID, "📡 Catalog updated for "+item.Title+".")
+	b.send(chatID, fmt.Sprintf("📡 Catalog updated for %s with uuid %s.", item.Title, uuid))
+	return uuid
 }
 
-func (b *Bot) postCatalogItem(ctx context.Context, item CatalogItem) error {
+func (b *Bot) postCatalogItem(ctx context.Context, item CatalogItem) (string, error) {
 	return b.postCatalog(ctx, "/v1/api/bot/videos", item)
 }
 
@@ -181,7 +190,7 @@ func (b *Bot) publishNewEpisode(ctx context.Context, chatID int64, uuid string, 
 		return
 	}
 
-	if err := b.postNewEpisode(ctx, uuid, episode); err != nil {
+	if _, err := b.postNewEpisode(ctx, uuid, episode); err != nil {
 		log.Printf("error publishing episode S%02dE%02d of %s: %v", episode.Season, episode.EpisodeNumber, uuid, err)
 		b.send(chatID, "⚠️ The file was saved, but the episode was not added to the catalog:\n"+err.Error())
 		return
@@ -189,17 +198,18 @@ func (b *Bot) publishNewEpisode(ctx context.Context, chatID int64, uuid string, 
 	b.send(chatID, fmt.Sprintf("📡 Episode S%02dE%02d added to the catalog.", episode.Season, episode.EpisodeNumber))
 }
 
-func (b *Bot) postNewEpisode(ctx context.Context, uuid string, episode episodeRequest) error {
+func (b *Bot) postNewEpisode(ctx context.Context, uuid string, episode episodeRequest) (string, error) {
 	return b.postCatalog(ctx, "/v1/api/bot/videos/"+uuid+"/new-episode", episode)
 }
 
-// postCatalog sends payload as JSON to a path of the catalog API and reads
-// nothing back but the status: these endpoints answer with what they saved, and
-// the bot has no use for it.
-func (b *Bot) postCatalog(ctx context.Context, path string, payload any) error {
+// postCatalog sends payload as JSON to a path of the catalog API and returns
+// the uuid of what it saved. The answer is read for that field alone, and a
+// body that does not carry it is not an error: the item was saved either way,
+// and the caller takes an empty uuid as "unknown".
+func (b *Bot) postCatalog(ctx context.Context, path string, payload any) (string, error) {
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to encode catalog item: %w", err)
+		return "", fmt.Errorf("failed to encode catalog item: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, catalogTimeout)
@@ -208,21 +218,40 @@ func (b *Bot) postCatalog(ctx context.Context, path string, payload any) error {
 	url := strings.TrimSuffix(b.cfg.APIUrl, "/") + path
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("failed to create catalog request: %w", err)
+		return "", fmt.Errorf("failed to create catalog request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to post the catalog item: %w", err)
+		return "", fmt.Errorf("failed to post the catalog item: %w", err)
 	}
 	defer resp.Body.Close()
 
+	answer, _ := io.ReadAll(io.LimitReader(resp.Body, catalogAnswerLimit))
+
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		answer, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return fmt.Errorf("catalog API answered %d: %s", resp.StatusCode, strings.TrimSpace(string(answer)))
+		reason := strings.TrimSpace(string(answer))
+		if len(reason) > 512 { // this one is shown to the user
+			reason = reason[:512] + "…"
+		}
+		return "", fmt.Errorf("catalog API answered %d: %s", resp.StatusCode, reason)
 	}
-	return nil
+
+	return uuidOf(answer), nil
+}
+
+type catalogAnswer struct {
+	Status string `json:"status"`
+	UUID   string `json:"id"`
+}
+
+func uuidOf(answer []byte) string {
+	var saved catalogAnswer
+	if err := json.Unmarshal(answer, &saved); err != nil {
+		return ""
+	}
+	return saved.UUID
 }
 
 // catalogPath returns the path the way the API expects it: relative to
