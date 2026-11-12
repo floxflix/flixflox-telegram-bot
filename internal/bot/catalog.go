@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// Episode, Season and CatalogItem mirror the flixflox catalog model. _id, uuid,
+// Episode, Season and CatalogItem mirror the floxflix catalog model. _id, uuid,
 // created_at and updated_at are not here: the API fills them in when saving,
 // and the bot has nothing to fill them with.
 type Episode struct {
@@ -155,7 +155,7 @@ func (b *Bot) buildEpisodeRequest(sess session, videoPath string) episodeRequest
 // several GB again. The uuid is empty when nothing was published.
 func (b *Bot) publishCatalogItem(ctx context.Context, chatID int64, item CatalogItem) string {
 	if b.cfg.APIUrl == "" {
-		log.Print("FLIXFLOX_API_URL is empty: the catalog item is not published")
+		log.Print("FLOXFLIX_API_URL is empty: the catalog item is not published")
 		return ""
 	}
 
@@ -178,7 +178,7 @@ func (b *Bot) postCatalogItem(ctx context.Context, item CatalogItem) (string, er
 // already on disk and the episode can be added again without sending it anew.
 func (b *Bot) publishNewEpisode(ctx context.Context, chatID int64, uuid string, episode episodeRequest) {
 	if b.cfg.APIUrl == "" {
-		log.Print("FLIXFLOX_API_URL is empty: the episode is not published")
+		log.Print("FLOXFLIX_API_URL is empty: the episode is not published")
 		return
 	}
 

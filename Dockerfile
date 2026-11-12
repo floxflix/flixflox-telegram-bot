@@ -8,14 +8,14 @@ RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/flixflox-bot ./cmd/flixflox-bot
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/floxflix-bot ./cmd/floxflix-bot
 
 FROM alpine:3.22
 
 RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
-COPY --from=build /out/flixflox-bot /usr/local/bin/flixflox-bot
+COPY --from=build /out/floxflix-bot /usr/local/bin/floxflix-bot
 
 ENV DOWNLOAD_DIR=/data/uploads \
     TELEGRAM_DATA_DIR=/data/telegram-data \
@@ -25,6 +25,6 @@ ENV DOWNLOAD_DIR=/data/uploads \
 
 RUN mkdir -p /data/uploads /data/telegram-data
 
-USER flixflox
+USER floxflix
 
-ENTRYPOINT ["flixflox-bot"]
+ENTRYPOINT ["floxflix-bot"]

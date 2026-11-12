@@ -12,7 +12,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"flixflox-telegram-bot/internal/storage"
+	"floxflix-telegram-bot/internal/storage"
 )
 
 type kind string

@@ -15,7 +15,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"flixflox-telegram-bot/internal/storage"
+	"floxflix-telegram-bot/internal/storage"
 )
 
 type Genre struct {
@@ -752,16 +752,6 @@ func (b *Bot) genreNames(ctx context.Context) []string {
 }
 
 func (b *Bot) titlesCatalog(ctx context.Context, title string) []Title {
-	b.titlesMu.Lock()
-	defer b.titlesMu.Unlock()
-
-	if b.titles != nil && time.Since(b.titlesAt) < defaultTTL {
-		return b.titles
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
-	defer cancel()
-
 	titles, err := b.fetchCatalogByTitle(ctx, title)
 	if err != nil {
 		log.Printf("could not fetch the titles list: %v", err)
@@ -790,13 +780,13 @@ func (b *Bot) fetchGenreData(ctx context.Context) ([]Genre, error) {
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch flixflox genre data: %w", err)
+		return nil, fmt.Errorf("failed to fetch floxflix genre data: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return nil, fmt.Errorf("failed to fetch flixflox genre data: status %d: %s", resp.StatusCode, body)
+		return nil, fmt.Errorf("failed to fetch floxflix genre data: status %d: %s", resp.StatusCode, body)
 	}
 
 	var genres []Genre
@@ -817,13 +807,13 @@ func (b *Bot) fetchCatalogByTitle(ctx context.Context, title string) ([]CatalogR
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch flixflox titles data: %w", err)
+		return nil, fmt.Errorf("failed to fetch floxflix titles data: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return nil, fmt.Errorf("failed to fetch flixflox titles data: status %d: %s", resp.StatusCode, body)
+		return nil, fmt.Errorf("failed to fetch floxflix titles data: status %d: %s", resp.StatusCode, body)
 	}
 
 	var titles []CatalogReponse

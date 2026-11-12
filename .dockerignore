@@ -8,7 +8,7 @@
 
 # Binaries and reports built on the host (another OS/arch).
 /bin/
-/flixflox-telegram-bot
+/floxflix-telegram-bot
 coverage.out
 
 .git/

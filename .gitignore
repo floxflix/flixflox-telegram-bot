@@ -3,7 +3,7 @@
 
 # Compiled binaries and reports
 /bin/
-/flixflox-telegram-bot
+/floxflix-telegram-bot
 coverage.out
 
 # Runtime data: the local Bot API cache includes the token in the folder name,

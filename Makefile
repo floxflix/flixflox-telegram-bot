@@ -1,5 +1,5 @@
-BINARY := bin/flixflox-bot
-PKG    := ./cmd/flixflox-bot
+BINARY := bin/floxflix-bot
+PKG    := ./cmd/floxflix-bot
 
 .PHONY: help build run test cover fmt vet tidy clean up down logs
 

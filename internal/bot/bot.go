@@ -13,7 +13,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"flixflox-telegram-bot/internal/config"
+	"floxflix-telegram-bot/internal/config"
 )
 
 // Bot is the bot's shared state: configuration, API client and the uploads in

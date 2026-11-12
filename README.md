@@ -1,4 +1,4 @@
-# flixflox-telegram-bot
+# floxflix-telegram-bot
 
 Telegram bot that receives movies and series and stores them tidily on disk,
 under `uploads/<category>/<title>/`.
@@ -11,7 +11,7 @@ with a `rename` instead of being downloaded over HTTP.
 ## Structure
 
 ```
-cmd/flixflox-bot/      entrypoint: loads config, builds the bot and handles signals
+cmd/floxflix-bot/      entrypoint: loads config, builds the bot and handles signals
 internal/config/       environment variables, validation and path translation
 internal/storage/      safe names and atomic writes to disk
 internal/bot/          Bot API client, handlers, sessions and downloads

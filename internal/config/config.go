@@ -31,7 +31,7 @@ type Config struct {
 	TelegramDataDir string `envconfig:"TELEGRAM_DATA_DIR" default:"./telegram-data"`
 	ServerWorkDir   string `envconfig:"TELEGRAM_SERVER_WORK_DIR" default:"/var/lib/telegram-bot-api"`
 
-	APIUrl string `envconfig:"FLIXFLOX_API_URL"`
+	APIUrl string `envconfig:"FLOXFLIX_API_URL"`
 
 	Debug bool
 
@@ -40,7 +40,7 @@ type Config struct {
 	allowedUsers map[int64]struct{}
 }
 
-const envPrefix = "FLIXFLOX"
+const envPrefix = "FLOXFLIX"
 
 // Load builds the configuration from the environment and validates it.
 func Load() (*Config, error) {

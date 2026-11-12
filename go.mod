@@ -1,4 +1,4 @@
-module flixflox-telegram-bot
+module floxflix-telegram-bot
 
 go 1.26.7
 

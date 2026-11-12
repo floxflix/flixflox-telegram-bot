@@ -1,4 +1,4 @@
-// Command flixflox-bot receives movies and TV shows over Telegram and stores
+// Command floxflix-bot receives movies and TV shows over Telegram and stores
 // them tidily on disk.
 package main
 
@@ -11,13 +11,13 @@ import (
 	"syscall"
 	"time"
 
-	"flixflox-telegram-bot/internal/bot"
-	"flixflox-telegram-bot/internal/config"
+	"floxflix-telegram-bot/internal/bot"
+	"floxflix-telegram-bot/internal/config"
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags)
-	log.SetPrefix("flixflox: ")
+	log.SetPrefix("floxflix: ")
 
 	if err := run(); err != nil {
 		log.Fatal(err)

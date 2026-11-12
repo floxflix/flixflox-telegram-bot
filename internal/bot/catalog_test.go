@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"flixflox-telegram-bot/internal/config"
+	"floxflix-telegram-bot/internal/config"
 )
 
 func testBot() *Bot {

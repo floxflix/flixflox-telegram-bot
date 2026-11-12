@@ -81,19 +81,19 @@ func TestIsAllowedWithoutListLetsAnyoneIn(t *testing.T) {
 
 func TestLoadRejectsMalformedAllowList(t *testing.T) {
 	// The prefixed name wins over the bare one, so the prefixed one is set:
-	// with FLIXFLOX_ALLOWED_USER_IDS defined, envconfig never looks at
+	// with FLOXFLIX_ALLOWED_USER_IDS defined, envconfig never looks at
 	// ALLOWED_USER_IDS.
-	t.Setenv("FLIXFLOX_BOT_TOKEN", "test-token")
-	t.Setenv("FLIXFLOX_TELEGRAM_API_ENDPOINT", "http://localhost:8081/bot%s/%s")
-	t.Setenv("FLIXFLOX_TELEGRAM_FILE_ENDPOINT", "http://localhost:8081/file/bot%s/%s")
-	t.Setenv("FLIXFLOX_ALLOWED_USER_IDS", "123,not-an-id")
+	t.Setenv("FLOXFLIX_BOT_TOKEN", "test-token")
+	t.Setenv("FLOXFLIX_TELEGRAM_API_ENDPOINT", "http://localhost:8081/bot%s/%s")
+	t.Setenv("FLOXFLIX_TELEGRAM_FILE_ENDPOINT", "http://localhost:8081/file/bot%s/%s")
+	t.Setenv("FLOXFLIX_ALLOWED_USER_IDS", "123,not-an-id")
 
 	if _, err := Load(); err == nil {
 		t.Error("Load() accepted an allow list with an invalid ID")
 	}
 
 	// The same config with the list written properly has to load.
-	t.Setenv("FLIXFLOX_ALLOWED_USER_IDS", "123,456")
+	t.Setenv("FLOXFLIX_ALLOWED_USER_IDS", "123,456")
 
 	cfg, err := Load()
 	if err != nil {
